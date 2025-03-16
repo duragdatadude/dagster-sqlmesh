@@ -301,6 +301,9 @@ class SQLMeshResource(ConfigurableResource):
                 if plan.get("skip_backfill") is None:
                     plan["skip_backfill"] = True
 
+            print(f"Plan and Run Options: {plan_and_run_options}")
+            context.log.info(f"Plan and Run Options: {plan_and_run_options}")
+
             for event in mesh.plan_and_run(
                 plan_and_run_options=plan_and_run_options,
             ):

@@ -6,11 +6,20 @@ PYTHON_VENV_NAME := ".venv"
 VENV_NAME := .venv
 PYTHON := python
 
-PYTHON_CMD := $(CURDIR)/$(VENV_NAME)/bin/python
-SQLMESH_CMD := $(CURDIR)/$(VENV_NAME)/bin/sqlmesh
-UV_CMD := uv
-ACTIVATE := source $(CURDIR)/$(VENV_NAME)/bin/activate
-DEACTIVATE := deactivate
+# Check if we're on Windows
+ifeq ($(OS),Windows_NT)
+    PYTHON_CMD := $(CURDIR)/$(VENV_NAME)/Scripts/python
+    SQLMESH_CMD := $(CURDIR)/$(VENV_NAME)/Scripts/sqlmesh
+    UV_CMD := "$(subst \,/,$(USERPROFILE))/.local/bin/uv.exe"
+    ACTIVATE := source $(CURDIR)/$(VENV_NAME)/Scripts/activate
+    DEACTIVATE := source $(CURDIR)/$(VENV_NAME)/Scripts/deactivate
+else
+    PYTHON_CMD := $(CURDIR)/$(VENV_NAME)/bin/python
+    SQLMESH_CMD := $(CURDIR)/$(VENV_NAME)/bin/sqlmesh
+    UV_CMD := uv
+    ACTIVATE := source $(CURDIR)/$(VENV_NAME)/bin/activate
+    DEACTIVATE := deactivate
+endif
 
 init-python:
 	@if [ ! -d "$(PYTHON_VENV_NAME)" ]; then \
@@ -48,6 +57,9 @@ pyright:
 clean-dagster:
 	rm -rf sample/dagster_project/storage sample/dagster_project/logs sample/dagster_project/history
 
+clean-db:
+	$(PYTHON_CMD) -c "import duckdb; conn = duckdb.connect('db.db'); [conn.execute(cmd[0]) for cmd in conn.execute(\"\"\"SELECT 'DROP TABLE ' || table_schema || '.' || table_name || ' CASCADE;' as drop_cmd FROM information_schema.tables WHERE table_schema != 'sources' AND table_schema != 'information_schema' AND table_type = 'BASE TABLE'\"\"\").fetchall()]; [conn.execute(cmd[0]) for cmd in conn.execute(\"\"\"SELECT 'DROP VIEW ' || table_schema || '.' || table_name || ' CASCADE;' as drop_cmd FROM information_schema.tables WHERE table_schema != 'sources' AND table_schema != 'information_schema' AND table_type = 'VIEW'\"\"\").fetchall()]; conn.close()"
+
 dagster-dev: clean-dagster
 	DAGSTER_HOME=$(CURDIR)/sample/dagster_project $(PYTHON_CMD) -m dagster dev -h 0.0.0.0 -w sample/dagster_project/workspace.yaml
 
@@ -56,4 +68,6 @@ dev: dagster-dev  # Alias for dagster-dev
 dagster-materialize:
 	$(PYTHON_CMD) -m dagster asset materialize -f sample/dagster_project/definitions.py --select '*'
 
-.PHONY: init init-python install-python-deps upgrade-python-deps clean test mypy check-pnpm install-node-deps upgrade-node-deps sample-dev dagster-dev dagster-materialize clean-dagster 
+clean-dev: clean-db clean-dagster dev
+
+.PHONY: init init-python install-python-deps upgrade-python-deps clean test mypy check-pnpm install-node-deps upgrade-node-deps sample-dev dagster-dev dagster-materialize clean-dagster clean-db clean-dev 

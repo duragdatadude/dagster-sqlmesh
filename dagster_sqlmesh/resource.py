@@ -379,7 +379,7 @@ class SQLMeshConcurrentResource(ConfigurableResource):
                 plan_and_run_options["shared"] = {}
                 plan_and_run_options["shared"]["select_models"] = [*models_map.keys()]
 
-            if plan_and_run_options.get("plan", {}).get("select_models") is not None:
+            if plan_and_run_options.get("shared", {}).get("select_models") is not None:
                 plan = plan_and_run_options.setdefault("plan", {})
                 if plan.get("skip_backfill") is None:
                     plan["skip_backfill"] = True

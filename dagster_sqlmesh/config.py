@@ -8,7 +8,7 @@ from sqlmesh.core.config import Config as MeshConfig
 
 @dataclass
 class ConfigOverride:
-    config_as_dict: dict[str, Any]
+    config_as_dict: dict
 
     def dict(self) -> dict[str, Any]:
         return self.config_as_dict

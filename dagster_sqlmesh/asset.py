@@ -2,6 +2,7 @@ import logging
 import typing as t
 
 from dagster import (
+    AssetsDefinition,
     RetryPolicy,
     multi_asset,
 )
@@ -25,7 +26,8 @@ def sqlmesh_assets(
     op_tags: t.Mapping[str, t.Any] | None = None,
     required_resource_keys: set[str] | None = None,
     retry_policy: RetryPolicy | None = None,
-):
+    enable_subsetting: bool = False,
+) -> t.Callable[[t.Callable[..., t.Any]], AssetsDefinition]:
     controller = DagsterSQLMeshController.setup_with_config(config)
     if not dagster_sqlmesh_translator:
         dagster_sqlmesh_translator = SQLMeshDagsterTranslator()
@@ -40,4 +42,5 @@ def sqlmesh_assets(
         compute_kind=compute_kind,
         retry_policy=retry_policy,
         required_resource_keys=required_resource_keys,
+        can_subset=enable_subsetting,
     )

@@ -209,7 +209,7 @@ class LogSuccess:
 
 @dataclass
 class LogFailedModels:
-    errors: list[NodeExecutionFailedError[str]]
+    errors: list[NodeExecutionFailedError]
 
 
 @dataclass

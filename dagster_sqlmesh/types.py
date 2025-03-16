@@ -20,7 +20,7 @@ class SQLMeshParsedFQN:
     view_name: str
 
     @classmethod
-    def parse(cls, fqn: str):
+    def parse(cls, fqn: str) -> "SQLMeshParsedFQN":
         split_fqn = fqn.split(".")
 
         # Remove any quotes
@@ -33,7 +33,7 @@ class SQLMeshModelDep:
     fqn: str
     model: Model | None = None
 
-    def parse_fqn(self):
+    def parse_fqn(self) -> SQLMeshParsedFQN:
         return SQLMeshParsedFQN.parse(self.fqn)
 
 
